@@ -33,6 +33,9 @@ public class AdminController {
 	@Autowired
 	private SuggestedQuestionService suggestedQuestionService;
 
+	
+	//Question section************************************************************************************
+
 	@PostMapping("/addQuestion")
 	public ResponseEntity<?> addQuestion(@RequestBody Question question) {
 		if (ValidationUtil.validationCheck(question)) {
@@ -86,25 +89,20 @@ public class AdminController {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
 		}
 	}
-
-	@GetMapping("/getSuggestedQuestions")
-	public ResponseEntity<?> getAllSuggestedQuestions() {
-		List<SuggestedQuestion> suggestedQuestions = suggestedQuestionService.getAllSuggestedQuestions();
-		if (suggestedQuestions != null) {
-			return ResponseEntity.status(HttpStatus.OK)
-					.body((List<SuggestedQuestion>) Hibernate.unproxy(suggestedQuestions));
-		} else {
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Thre are no suggested questions");
-		}
-	}
+	
+	//Suggested section************************************************************************************
 
 	@PostMapping("/addSuggestedQuestion")
 	public ResponseEntity<?> addSuggestedQuestion(SuggestedQuestion suggestedQuestion) {
 		if (ValidationUtil.validationCheck(suggestedQuestion)) {
 			suggestedQuestion.getQuestion().setApproved(true);
-			suggestedQuestionService.removeSuggestedQuestion(suggestedQuestion.getId());
-			questionService.addQuestion(suggestedQuestion.getQuestion());
-			return ResponseEntity.status(HttpStatus.OK).body("Question added");
+			try {
+				suggestedQuestionService.removeSuggestedQuestion(suggestedQuestion.getId());
+				questionService.addQuestion(suggestedQuestion.getQuestion());
+				return ResponseEntity.status(HttpStatus.OK).body("Question added");
+			} catch (EntityNotFoundException e) {
+				return ResponseEntity.status(HttpStatus.ACCEPTED).body("This Suggested question does not exists");
+			}
 		} else {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("Invalid input");
 		}
@@ -142,6 +140,17 @@ public class AdminController {
 			return ResponseEntity.status(HttpStatus.OK).body("All suggested questions has been removed");
 		} catch (EntityNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("There are no suggested questions");
+		}
+	}
+	
+	@GetMapping("/getSuggestedQuestions")
+	public ResponseEntity<?> getAllSuggestedQuestions() {
+		List<SuggestedQuestion> suggestedQuestions = suggestedQuestionService.getAllSuggestedQuestions();
+		if (suggestedQuestions != null) {
+			return ResponseEntity.status(HttpStatus.OK)
+					.body((List<SuggestedQuestion>) Hibernate.unproxy(suggestedQuestions));
+		} else {
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
 		}
 	}
 

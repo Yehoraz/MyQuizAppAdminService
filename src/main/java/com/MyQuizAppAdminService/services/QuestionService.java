@@ -45,7 +45,7 @@ public class QuestionService {
 		if(repository.count() > 0) {
 			return repository.findAll();
 		}else {
-			throw new EntityNotFoundException("Question database is empty");
+			return null;
 		}
 	}
 	
