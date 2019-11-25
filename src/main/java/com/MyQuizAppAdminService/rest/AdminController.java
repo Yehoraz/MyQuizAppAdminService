@@ -33,11 +33,15 @@ public class AdminController {
 	@Autowired
 	private SuggestedQuestionService suggestedQuestionService;
 
-	
-	//Question section************************************************************************************
+	private Question question = null;
+	private SuggestedQuestion suggestedQuestion = null;
+
+	// Question
+	// section************************************************************************************
 
 	@PostMapping("/addQuestion")
 	public ResponseEntity<?> addQuestion(@RequestBody Question question) {
+		restartVariables();
 		if (ValidationUtil.validationCheck(question)) {
 			questionService.addQuestion(question);
 			return ResponseEntity.status(HttpStatus.OK).body("Question added");
@@ -48,6 +52,7 @@ public class AdminController {
 
 	@PutMapping("/updateQuestion")
 	public ResponseEntity<?> updateQuestion(@RequestBody Question question) {
+		restartVariables();
 		if (ValidationUtil.validationCheck(question)) {
 			try {
 				questionService.updateQuestion(question);
@@ -62,6 +67,7 @@ public class AdminController {
 
 	@DeleteMapping("/removeQuestion/{questionId}")
 	public ResponseEntity<?> removeQuestion(@PathVariable long questionId) {
+		restartVariables();
 		try {
 			questionService.removeQuestion(questionId);
 			return ResponseEntity.status(HttpStatus.OK).body("Question removed");
@@ -72,7 +78,8 @@ public class AdminController {
 
 	@GetMapping("/getQuestion/{questionId}")
 	public ResponseEntity<?> getQuestion(@PathVariable long questionId) {
-		Question question = questionService.getQuestionById(questionId);
+		restartVariables();
+		question = questionService.getQuestionById(questionId);
 		if (question != null) {
 			return ResponseEntity.status(HttpStatus.OK).body(question);
 		} else {
@@ -82,6 +89,7 @@ public class AdminController {
 
 	@GetMapping("getAllQuestions")
 	public ResponseEntity<?> getAllQuestions() {
+		restartVariables();
 		List<Question> questions = questionService.getAllQuestions();
 		if (questions != null) {
 			return ResponseEntity.status(HttpStatus.OK).body((List<Question>) Hibernate.unproxy(questions));
@@ -89,11 +97,13 @@ public class AdminController {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
 		}
 	}
-	
-	//Suggested section************************************************************************************
+
+	// Suggested
+	// section***************************************************************
 
 	@PostMapping("/addSuggestedQuestion")
 	public ResponseEntity<?> addSuggestedQuestion(SuggestedQuestion suggestedQuestion) {
+		restartVariables();
 		if (ValidationUtil.validationCheck(suggestedQuestion)) {
 			suggestedQuestion.getQuestion().setApproved(true);
 			try {
@@ -110,6 +120,7 @@ public class AdminController {
 
 	@PostMapping("/addAllSuggestedQuestions")
 	public ResponseEntity<?> addAllSuggestedQuestions() {
+		restartVariables();
 		List<SuggestedQuestion> suggestedQuestions = suggestedQuestionService.getAllSuggestedQuestions();
 		if (suggestedQuestions != null) {
 			suggestedQuestions.forEach(sq -> {
@@ -125,6 +136,7 @@ public class AdminController {
 
 	@DeleteMapping("/deleteSuggestedQuestion/{sqId}")
 	public ResponseEntity<?> deleteSuggestedQuestion(@PathVariable("sqID") long suggestedQuestionId) {
+		restartVariables();
 		try {
 			suggestedQuestionService.removeSuggestedQuestion(suggestedQuestionId);
 			return ResponseEntity.status(HttpStatus.OK).body("Suggested question removed");
@@ -135,6 +147,7 @@ public class AdminController {
 
 	@DeleteMapping("/deleteAllSuggestedQuestions")
 	public ResponseEntity<?> deleteAllSuggestedQuestions() {
+		restartVariables();
 		try {
 			suggestedQuestionService.removeAllSuggestedQuestions();
 			return ResponseEntity.status(HttpStatus.OK).body("All suggested questions has been removed");
@@ -142,9 +155,21 @@ public class AdminController {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("There are no suggested questions");
 		}
 	}
-	
+
+	@GetMapping("/getSuggestedQuestion/{sQuestionId}")
+	public ResponseEntity<?> getSuggestedQuestion(@PathVariable long sQuestionId) {
+		restartVariables();
+		suggestedQuestion = suggestedQuestionService.getSuggestedQuestion(sQuestionId);
+		if (suggestedQuestion != null) {
+			return ResponseEntity.status(HttpStatus.OK).body(suggestedQuestion);
+		} else {
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+		}
+	}
+
 	@GetMapping("/getSuggestedQuestions")
 	public ResponseEntity<?> getAllSuggestedQuestions() {
+		restartVariables();
 		List<SuggestedQuestion> suggestedQuestions = suggestedQuestionService.getAllSuggestedQuestions();
 		if (suggestedQuestions != null) {
 			return ResponseEntity.status(HttpStatus.OK)
@@ -152,6 +177,11 @@ public class AdminController {
 		} else {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
 		}
+	}
+
+	private void restartVariables() {
+		question = null;
+		suggestedQuestion = null;
 	}
 
 }
